@@ -1,3 +1,11 @@
+## [25.07.2] - 2025-07-14
+
+### ✨ Features
+- feat: now we support both format of version
+
+### 🐛 Bug Fixes
+- fix: version not upgrade when create tag
+
 ## [25.07.1] - 2025-07-14
 
 ### ✨ Features
