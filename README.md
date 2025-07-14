@@ -10,7 +10,7 @@ CalVer Release is a **semantic-release alternative** that uses **Calendar Versio
 
 ## ✨ Features
 
-- 📅 **CalVer Versioning** - `YY.MM.MINOR.PATCH` format
+- 📅 **CalVer Versioning** - `YY.MM.MINOR.PATCH` format with NPM-compatible `YY.MM.PATCH` option
 - 🏢 **First-class Monorepo Support** - npm workspaces, Lerna, pnpm, Nx
 - 🔌 **Plugin Architecture** - Extensible like semantic-release
 - 🐙 **GitHub & GitLab Integration** - Automatic releases and notes
@@ -60,13 +60,88 @@ await calverRelease({
 });
 ```
 
+## 📅 Version Formats
+
+CalVer Release supports two CalVer formats to accommodate different use cases:
+
+### 🎯 **Automatic Format Selection**
+
+The tool automatically selects the appropriate format based on your configuration:
+
+- **With NPM Plugin**: Uses `YY.MM.PATCH` (3-part) for NPM compatibility
+- **Without NPM Plugin**: Uses `YY.MM.MINOR.PATCH` (4-part) for full CalVer semantics
+- **Manual Override**: Set `versionFormat` to explicitly choose format
+
+```javascript
+// Automatic 3-part format (NPM compatible)
+module.exports = {
+  plugins: [
+    '@calver-release/npm',  // Triggers 3-part format
+    '@calver-release/git'
+  ]
+};
+
+// Automatic 4-part format (full CalVer)
+module.exports = {
+  plugins: [
+    '@calver-release/changelog',  // No NPM plugin = 4-part format
+    '@calver-release/git'
+  ]
+};
+
+// Manual override
+module.exports = {
+  versionFormat: 'YY.MM.MINOR.PATCH',  // Force 4-part
+  plugins: ['@calver-release/npm']
+};
+```
+
+### 📊 **Format Comparison**
+
+| Aspect | 4-Part Format | 3-Part Format |
+|--------|---------------|---------------|
+| **Pattern** | `YY.MM.MINOR.PATCH` | `YY.MM.PATCH` |
+| **Example** | `25.07.1.5` | `25.07.15` |
+| **NPM Compatible** | ❌ No | ✅ Yes |
+| **Full CalVer Semantics** | ✅ Yes | ⚠️ Limited |
+| **Use Case** | Changelog, tags, releases | NPM publishing |
+| **Minor Increments** | ✅ Separate counter | ❌ Not available |
+
 ## 📖 Configuration
 
 CalVer Release supports multiple configuration methods:
 
 ### Version Format Options
 
-- **Format**: `YY.MM.MINOR.PATCH` (e.g., `25.07.0.1`)
+CalVer Release supports two version formats:
+
+#### **4-Part Format**: `YY.MM.MINOR.PATCH` (Default)
+- **Use case**: Non-NPM scenarios (changelog, release notes, tags)
+- **Example**: `25.07.0.1`, `25.07.1.2`, `25.08.0.1`
+- **Behavior**: Full CalVer semantics with separate minor and patch increments
+
+#### **3-Part Format**: `YY.MM.PATCH` (NPM Compatible)  
+- **Use case**: NPM publishing (automatically enabled with NPM plugin)
+- **Example**: `25.07.1`, `25.07.2`, `25.08.1`
+- **Behavior**: NPM-compatible semantic versioning
+
+#### **Format Selection**
+
+```json
+{
+  "versionFormat": "YY.MM.MINOR.PATCH",    // 4-part (default)
+  "versionFormat": "YY.MM.PATCH",          // 3-part (NPM compatible)
+  "versionFormat": "auto"                  // Auto-detect based on plugins
+}
+```
+
+**Auto-Detection Rules:**
+- **With NPM plugin**: Automatically uses 3-part format (`YY.MM.PATCH`)
+- **Without NPM plugin**: Uses 4-part format (`YY.MM.MINOR.PATCH`)
+- **Explicit setting**: Overrides auto-detection
+
+#### **Month Update Control**
+
 - **autoUpdateMonth**: Controls automatic month updates
   - `false` (default): Manual month control via package.json version
   - `true`: Automatically updates to current `YY.MM` when new month arrives
@@ -74,6 +149,15 @@ CalVer Release supports multiple configuration methods:
 **Behavior Examples:**
 
 ```bash
+# 4-part format (default)
+# package.json: "25.07.0.1" 
+# feat: commit → "25.07.1.1" (minor increment)
+# fix: commit → "25.07.0.2" (patch increment)
+
+# 3-part format (NPM compatible)
+# package.json: "25.07.1"
+# Any commit → "25.07.2" (patch increment only)
+
 # autoUpdateMonth: false (default)
 # package.json: "25.07.0.1" 
 # August release → "25.07.0.2" (stays in July)
@@ -94,6 +178,7 @@ CalVer Release supports multiple configuration methods:
   "calver-release": {
     "branches": ["main", "master"],
     "autoUpdateMonth": false,
+    "versionFormat": "auto",
     "plugins": [
       "@calver-release/commit-analyzer",
       "@calver-release/release-notes-generator",
@@ -113,6 +198,7 @@ CalVer Release supports multiple configuration methods:
   "branches": ["main"],
   "tagFormat": "v-${version}",
   "autoUpdateMonth": false,
+  "versionFormat": "auto",
   "plugins": [
     "@calver-release/commit-analyzer",
     "@calver-release/release-notes-generator",
@@ -130,13 +216,14 @@ CalVer Release supports multiple configuration methods:
 module.exports = {
   branches: ['main'],
   autoUpdateMonth: true, // Automatically update to current YY.MM when new month arrives
+  versionFormat: 'auto', // Auto-detect format based on plugins (or use 'YY.MM.MINOR.PATCH' / 'YY.MM.PATCH')
   plugins: [
     '@calver-release/commit-analyzer',
     ['@calver-release/release-notes-generator', {
       preset: 'conventionalcommits'
     }],
     '@calver-release/changelog',
-    '@calver-release/npm',
+    '@calver-release/npm', // This plugin triggers 3-part format automatically
     '@calver-release/git',
     ['@calver-release/github', {
       assets: ['dist/**']
@@ -174,9 +261,15 @@ my-monorepo/
 For monorepos, CalVer Release creates package-specific tags:
 
 ```bash
+# 4-part format (default)
 v-25.07.0.14-core-release    # Core package v25.07.0.14
-v-25.07.0.15-ui-release      # UI package v25.07.0.15  
+v-25.07.1.15-ui-release      # UI package v25.07.1.15  
 v-25.07.0.16-api-release     # API package v25.07.0.16
+
+# 3-part format (with NPM plugin)
+v-25.07.14-core-release      # Core package v25.07.14
+v-25.07.15-ui-release        # UI package v25.07.15  
+v-25.07.16-api-release       # API package v25.07.16
 ```
 
 ## 🔌 Built-in Plugins
@@ -186,7 +279,7 @@ v-25.07.0.16-api-release     # API package v25.07.0.16
 | `@calver-release/commit-analyzer` | Analyzes conventional commits |
 | `@calver-release/release-notes-generator` | Generates release notes |
 | `@calver-release/changelog` | Updates CHANGELOG.md |
-| `@calver-release/npm` | Updates package.json versions |
+| `@calver-release/npm` | Updates package.json versions (automatically uses 3-part format) |
 | `@calver-release/git` | Creates tags and commits |
 | `@calver-release/github` | Creates GitHub releases |
 | `@calver-release/gitlab` | Creates GitLab releases |
@@ -622,6 +715,8 @@ module.exports = {
 
 | Variable | Description |
 |----------|-------------|
+| `NPM_TOKEN` | NPM authentication token for publishing |
+| `NODE_AUTH_TOKEN` | Alternative NPM authentication token |
 | `GITHUB_TOKEN` | GitHub API token for releases |
 | `GITLAB_ACCESS_TOKEN` | GitLab API token for releases |
 | `CI_PROJECT_ID` | GitLab project ID |

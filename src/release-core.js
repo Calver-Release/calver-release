@@ -333,6 +333,12 @@ function analyzeCommits(commitMessages, packagePath = '.') {
 
 // Generate CalVer version for a specific package
 function generateCalVerVersion(releaseType, packagePath = '.', options = {}) {
+  // Determine version format
+  const versionFormat = determineVersionFormat(options);
+  const isNpmCompatible = versionFormat === 'YY.MM.PATCH';
+  
+  console.log(`Using version format: ${versionFormat}`);
+  
   // Read package.json version
   let packageJsonVersion = null;
   const packageJsonPath = path.join(packagePath, 'package.json');
@@ -365,20 +371,20 @@ function generateCalVerVersion(releaseType, packagePath = '.', options = {}) {
           return tag.includes(`-${packageName}-release`);
         } else {
           // For single repo: match v-VERSION format (no package suffix)
-          return tag.match(/^v-\d{2}\.\d{2}\.\d+$/);
+          return tag.match(/^v-\d{2}\.\d{2}\.\d+(\.\d+)?$/);
         }
       })
       .map(tag => {
         if (packageName) {
           // Extract version from v-VERSION-PACKAGE-release
-          const match = tag.match(/^v-(\d{2}\.\d{2}\.\d+)-/);
+          const match = tag.match(/^v-(\d{2}\.\d{2}\.\d+(?:\.\d+)?)-/);
           return match ? match[1] : '';
         } else {
           // Extract version from v-VERSION
           return tag.replace(/^v-/, '');
         }
       })
-      .filter(tag => tag.match(/^\d{2}\.\d{2}\.\d+$/)); // Only CalVer tags
+      .filter(tag => tag.match(/^\d{2}\.\d{2}\.\d+(\.\d+)?$/)); // Both 3-part and 4-part CalVer tags
   } catch (error) {
     console.log('No existing tags found');
   }
@@ -396,7 +402,7 @@ function generateCalVerVersion(releaseType, packagePath = '.', options = {}) {
   const currentMonth = (now.getMonth() + 1).toString().padStart(2, '0');
   const currentYearMonth = `${currentYear}.${currentMonth}`;
   
-  if (packageJsonVersion && packageJsonVersion.match(/^\d{2}\.\d{2}\.\d+$/)) {
+  if (packageJsonVersion && packageJsonVersion.match(/^\d{2}\.\d{2}\.\d+(\.\d+)?$/)) {
     // Use YY.MM from package.json
     const [pkgYear, pkgMonth] = packageJsonVersion.split('.');
     const packageYearMonth = `${pkgYear}.${pkgMonth}`;
@@ -428,28 +434,84 @@ function generateCalVerVersion(releaseType, packagePath = '.', options = {}) {
     console.log(`Using current date for YY.MM: ${targetYearMonth}`);
   }
   
-  // Find tags for target month
-  const currentMonthTags = existingTags.filter(tag => tag.startsWith(targetYearMonth));
+  // Find tags for target month (filter by format)
+  const currentMonthTags = existingTags
+    .filter(tag => tag.startsWith(targetYearMonth))
+    .filter(tag => {
+      const parts = tag.split('.');
+      if (isNpmCompatible) {
+        return parts.length === 3; // 3-part format only
+      } else {
+        return parts.length === 4; // 4-part format only
+      }
+    });
   
   if (currentMonthTags.length === 0 || isManualBump || isAutoMonthUpdate) {
     // First release, manual bump, or auto month update
-    const newVersion = `${targetYearMonth}.1`;
+    const newVersion = isNpmCompatible ? `${targetYearMonth}.1` : `${targetYearMonth}.0.1`;
     const reason = isAutoMonthUpdate ? 'Auto month update' : isManualBump ? 'Manual month bump' : 'First release this month';
     console.log(`${reason}: ${newVersion}`);
     return newVersion;
   }
   
-  // Increment existing based on release type
+  // Increment existing based on release type and format
   const latestTag = currentMonthTags[0];
   console.log(`Latest tag for ${targetYearMonth}: ${latestTag}`);
   
-  const [, , patch] = latestTag.split('.').map(Number);
+  if (isNpmCompatible) {
+    // 3-part format: YY.MM.PATCH
+    const [, , patch] = latestTag.split('.').map(Number);
+    const newVersion = `${targetYearMonth}.${patch + 1}`;
+    console.log(`Incremented patch: ${newVersion}`);
+    return newVersion;
+  } else {
+    // 4-part format: YY.MM.MINOR.PATCH
+    const [, , minor, patch] = latestTag.split('.').map(Number);
+    
+    let newMinor = minor;
+    let newPatch = patch;
+    
+    if (releaseType === 'minor' || releaseType === 'major') {
+      newMinor += 1;
+      newPatch = 1;
+    } else {
+      newPatch += 1;
+    }
+    
+    const newVersion = `${targetYearMonth}.${newMinor}.${newPatch}`;
+    console.log(`Incremented ${releaseType}: ${newVersion}`);
+    return newVersion;
+  }
+}
+
+// Determine version format based on options and plugin configuration
+function determineVersionFormat(options = {}) {
+  // If explicitly set, use that
+  if (options.versionFormat && options.versionFormat !== 'auto') {
+    return options.versionFormat;
+  }
   
-  // In 3-part CalVer, always increment patch regardless of release type
-  const newVersion = `${targetYearMonth}.${patch + 1}`;
-  console.log(`Incremented patch: ${newVersion}`);
+  // Auto-detect based on plugins
+  if (options.plugins) {
+    const hasNpmPlugin = options.plugins.some(plugin => {
+      if (typeof plugin === 'string') {
+        return plugin.includes('npm');
+      } else if (Array.isArray(plugin)) {
+        return plugin[0].includes('npm');
+      } else if (plugin && typeof plugin === 'object' && plugin.path) {
+        return plugin.path.includes('npm');
+      }
+      return false;
+    });
+    
+    if (hasNpmPlugin) {
+      console.log('NPM plugin detected, using 3-part version format for NPM compatibility');
+      return 'YY.MM.PATCH';
+    }
+  }
   
-  return newVersion;
+  // Default to 4-part format for full CalVer support
+  return 'YY.MM.MINOR.PATCH';
 }
 
 // Generate release notes from commits
@@ -612,6 +674,7 @@ module.exports = {
   getChangedPackages,
   analyzeCommits,
   generateCalVerVersion,
+  determineVersionFormat,
   generateReleaseNotes,
   updateChangelog,
   processPackageRelease,
