@@ -1,6 +1,8 @@
 ## [25.07.0.1] - 2025-07-14
 ### 🐛 Bug Fixes 
 - fix: fix analyze commits not catch the rule commit 
+
+### ✨ Feature 
 - feat(Initial commit): CalVer Release tool with autoUpdateMonth feature
 # Changelog
 

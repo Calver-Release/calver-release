@@ -102,11 +102,7 @@ async function calverRelease(
     const notes = await runPlugins(plugins.generateNotes, ctx);
     ctx.nextRelease!.notes = notes.filter(n => n).join('\\n\\n');
     
-    // Step 5: Prepare release
-    ctx.logger!.log('Prepare release');
-    await runPlugins(plugins.prepare, ctx);
-    
-    // Skip actual release in dry-run mode
+    // Skip file modifications in dry-run mode
     if (config.dryRun) {
       ctx.logger!.log('Dry run complete');
       return {
@@ -115,6 +111,10 @@ async function calverRelease(
         nextRelease: ctx.nextRelease
       };
     }
+    
+    // Step 5: Prepare release
+    ctx.logger!.log('Prepare release');
+    await runPlugins(plugins.prepare, ctx);
     
     // Step 6: Publish release
     ctx.logger!.log('Publish release');

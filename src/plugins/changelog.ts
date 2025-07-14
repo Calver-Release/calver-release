@@ -7,7 +7,13 @@ import { Plugin, CalverReleaseContext, PluginFactory } from '../types';
 const createChangelogPlugin: PluginFactory = (options: any = {}): Plugin => {
   return {
     prepare: async (ctx: CalverReleaseContext): Promise<void> => {
-      const { logger, nextRelease } = ctx;
+      const { logger, nextRelease, options } = ctx;
+      
+      // Skip changelog updates in dry-run mode
+      if (options?.dryRun) {
+        logger?.log('Dry run: Skipping changelog update');
+        return;
+      }
       
       logger?.log('Updating changelog...');
       

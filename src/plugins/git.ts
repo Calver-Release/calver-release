@@ -7,7 +7,13 @@ import { Plugin, CalverReleaseContext, PluginResult, PluginFactory } from '../ty
 const createGitPlugin: PluginFactory = (options: any = {}): Plugin => {
   return {
     prepare: async (ctx: CalverReleaseContext): Promise<void> => {
-      const { logger, nextRelease } = ctx;
+      const { logger, nextRelease, options } = ctx;
+      
+      // Skip Git operations in dry-run mode
+      if (options?.dryRun) {
+        logger?.log('Dry run: Skipping Git tag creation');
+        return;
+      }
       
       // Configure git user if needed
       configureGitUser();

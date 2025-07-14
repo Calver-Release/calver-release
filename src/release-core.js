@@ -224,7 +224,7 @@ function getChangedPackages(packages, commitMessages) {
     }
     
     // Also check for scope-specific commits
-    const commits = commitMessages.split('\\n').filter(line => line.trim());
+    const commits = commitMessages.split('\n').filter(line => line.trim());
     for (const commit of commits) {
       const message = commit.substring(8); // Remove hash prefix
       
@@ -256,7 +256,7 @@ function getChangedPackages(packages, commitMessages) {
 
 // Analyze commits using conventional commit format
 function analyzeCommits(commitMessages, packagePath = '.') {
-  const commits = commitMessages.split('\\n').filter(line => line.trim());
+  const commits = commitMessages.split('\n').filter(line => line.trim());
   
   let hasFeature = false;
   let hasFix = false;
@@ -315,7 +315,7 @@ function analyzeCommits(commitMessages, packagePath = '.') {
     return null;
   }
   
-  console.log(`\\n📋 Release commits found:`);
+  console.log(`\n📋 Release commits found:`);
   releaseCommits.forEach(commit => console.log(`   ${commit}`));
   
   // In CalVer, we always do patch increments, but track the type for release notes
@@ -463,46 +463,46 @@ function generateCalVerVersion(releaseType, packagePath = '.', options = {}) {
 function generateReleaseNotes(analysis, version, packageName = null) {
   const date = new Date().toISOString().split('T')[0];
   const title = packageName ? `${packageName} [${version}]` : `[${version}]`;
-  let notes = `## ${title} - ${date}\\n\\n`;
+  let notes = `## ${title} - ${date}\n\n`;
   
   if (analysis.hasBreakingChange) {
-    notes += `### 💥 BREAKING CHANGES\\n`;
+    notes += `### 💥 BREAKING CHANGES\n`;
     const breakingCommits = analysis.releaseCommits.filter(c => c.includes('💥'));
     breakingCommits.forEach(commit => {
       const msg = commit.replace('💥 ', '');
-      notes += `- ${msg}\\n`;
+      notes += `- ${msg}\n`;
     });
-    notes += '\\n';
+    notes += '\n';
   }
   
   const features = analysis.releaseCommits.filter(c => c.includes('✨'));
   if (features.length > 0) {
-    notes += `### ✨ Features\\n`;
+    notes += `### ✨ Features\n`;
     features.forEach(commit => {
       const msg = commit.replace('✨ ', '');
-      notes += `- ${msg}\\n`;
+      notes += `- ${msg}\n`;
     });
-    notes += '\\n';
+    notes += '\n';
   }
   
   const fixes = analysis.releaseCommits.filter(c => c.includes('🐛'));
   if (fixes.length > 0) {
-    notes += `### 🐛 Bug Fixes\\n`;
+    notes += `### 🐛 Bug Fixes\n`;
     fixes.forEach(commit => {
       const msg = commit.replace('🐛 ', '');
-      notes += `- ${msg}\\n`;
+      notes += `- ${msg}\n`;
     });
-    notes += '\\n';
+    notes += '\n';
   }
   
   const performance = analysis.releaseCommits.filter(c => c.includes('⚡'));
   if (performance.length > 0) {
-    notes += `### ⚡ Performance Improvements\\n`;
+    notes += `### ⚡ Performance Improvements\n`;
     performance.forEach(commit => {
       const msg = commit.replace('⚡ ', '');
-      notes += `- ${msg}\\n`;
+      notes += `- ${msg}\n`;
     });
-    notes += '\\n';
+    notes += '\n';
   }
   
   return notes.trim();
@@ -516,19 +516,31 @@ function updateChangelog(releaseNotes, packagePath = '.') {
   if (fs.existsSync(changelogPath)) {
     existingChangelog = fs.readFileSync(changelogPath, 'utf8');
   } else {
-    existingChangelog = '# Changelog\\n\\nAll notable changes to this project will be documented in this file.\\n\\n';
+    existingChangelog = '# Changelog\n\nAll notable changes to this project will be documented in this file.\n\n';
   }
   
-  // Insert new release notes after the header
-  const lines = existingChangelog.split('\\n');
-  const headerEndIndex = lines.findIndex(line => line.startsWith('## ')) || lines.length;
+  // Insert new release notes after the main header
+  const lines = existingChangelog.split('\n');
+  let insertIndex = lines.length;
+  
+  // Find the first ## heading (release section) or end of main header
+  for (let i = 0; i < lines.length; i++) {
+    if (lines[i].startsWith('## ')) {
+      insertIndex = i;
+      break;
+    }
+    // If we find an empty line after the main header, insert after it
+    if (i > 0 && lines[i-1].trim() && lines[i].trim() === '') {
+      insertIndex = i + 1;
+    }
+  }
   
   const newChangelog = [
-    ...lines.slice(0, headerEndIndex),
+    ...lines.slice(0, insertIndex),
     releaseNotes,
     '',
-    ...lines.slice(headerEndIndex)
-  ].join('\\n');
+    ...lines.slice(insertIndex)
+  ].join('\n');
   
   fs.writeFileSync(changelogPath, newChangelog);
   console.log('📝 Updated CHANGELOG.md');
@@ -536,7 +548,7 @@ function updateChangelog(releaseNotes, packagePath = '.') {
 
 // Process a single package release
 async function processPackageRelease(pkg, commits, options = {}) {
-  console.log(`\\n📦 Processing package: ${pkg.name} (${pkg.path})`);
+  console.log(`\n📦 Processing package: ${pkg.name} (${pkg.path})`);
   
   // Analyze commits for this package
   const analysis = analyzeCommits(commits, pkg.path);
@@ -557,22 +569,28 @@ async function processPackageRelease(pkg, commits, options = {}) {
   // Generate release notes for this package
   const packageName = pkg.name === 'root' ? null : pkg.name;
   const releaseNotes = generateReleaseNotes(analysis, newVersion, packageName);
-  console.log(`📋 Release Notes for ${pkg.name}:\\n${releaseNotes}\\n`);
+  console.log(`📋 Release Notes for ${pkg.name}:\n${releaseNotes}\n`);
   
-  // Update CHANGELOG.md for this package
-  updateChangelog(releaseNotes, pkg.path);
-  
-  // Update package.json for this package
+  // Update CHANGELOG.md and package.json for this package
   const packageJsonPath = path.join(pkg.path, 'package.json');
-  const packageJson = JSON.parse(fs.readFileSync(packageJsonPath, 'utf8'));
-  packageJson.version = newVersion;
-  fs.writeFileSync(packageJsonPath, JSON.stringify(packageJson, null, 2) + '\\n');
-  console.log(`📦 Updated ${packageJsonPath} to ${newVersion}`);
-  
-  // Create tag for this package
   const tagName = packageName ? `v-${newVersion}-${packageName}-release` : `v-${newVersion}`;
-  execSync(`git tag ${tagName}`, { stdio: 'inherit' });
-  console.log(`🏷️  Created tag ${tagName}`);
+  
+  if (options.dryRun) {
+    console.log(`📝 Dry run: Would update CHANGELOG.md for ${pkg.name}`);
+    console.log(`📦 Dry run: Would update ${packageJsonPath} to ${newVersion}`);
+    console.log(`🏷️  Dry run: Would create tag ${tagName}`);
+  } else {
+    updateChangelog(releaseNotes, pkg.path);
+    const packageJson = JSON.parse(fs.readFileSync(packageJsonPath, 'utf8'));
+    console.log(`📦 Updating ${packageJsonPath} to version ${newVersion}`);
+    packageJson.version = newVersion;
+    fs.writeFileSync(packageJsonPath, JSON.stringify(packageJson, null, 2));
+    console.log(`📦 Updated ${packageJsonPath} to ${newVersion}`);
+    
+    // Create tag for this package
+    execSync(`git tag ${tagName}`, { stdio: 'inherit' });
+    console.log(`🏷️  Created tag ${tagName}`);
+  }
   
   return {
     package: pkg,

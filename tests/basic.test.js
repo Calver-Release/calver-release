@@ -17,8 +17,13 @@ describe('calver-release', () => {
     });
 
     test('should handle dry run mode', async () => {
-      const result = await calverRelease({ dryRun: true });
+      const result = await calverRelease({ 
+        dryRun: true,
+        ci: false,
+        branches: ['main']
+      });
       expect(result).toHaveProperty('released');
+      expect(result.released).toBe(false);
     });
   });
 
@@ -35,11 +40,13 @@ describe('calver-release', () => {
       const options = {
         dryRun: true,
         debug: true,
-        branches: ['main']
+        branches: ['main'],
+        ci: false
       };
       
       const result = await calverRelease(options);
       expect(result).toBeDefined();
+      expect(result.released).toBe(false);
     });
   });
 });
