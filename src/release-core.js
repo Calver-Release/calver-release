@@ -365,20 +365,20 @@ function generateCalVerVersion(releaseType, packagePath = '.', options = {}) {
           return tag.includes(`-${packageName}-release`);
         } else {
           // For single repo: match v-VERSION format (no package suffix)
-          return tag.match(/^v-\\d{2}\\.\\d{2}\\.\\d+\\.\\d+$/);
+          return tag.match(/^v-\d{2}\.\d{2}\.\d+$/);
         }
       })
       .map(tag => {
         if (packageName) {
           // Extract version from v-VERSION-PACKAGE-release
-          const match = tag.match(/^v-(\\d{2}\\.\\d{2}\\.\\d+\\.\\d+)-/);
+          const match = tag.match(/^v-(\d{2}\.\d{2}\.\d+)-/);
           return match ? match[1] : '';
         } else {
           // Extract version from v-VERSION
           return tag.replace(/^v-/, '');
         }
       })
-      .filter(tag => tag.match(/^\\d{2}\\.\\d{2}\\.\\d+\\.\\d+$/)); // Only CalVer tags
+      .filter(tag => tag.match(/^\d{2}\.\d{2}\.\d+$/)); // Only CalVer tags
   } catch (error) {
     console.log('No existing tags found');
   }
@@ -396,7 +396,7 @@ function generateCalVerVersion(releaseType, packagePath = '.', options = {}) {
   const currentMonth = (now.getMonth() + 1).toString().padStart(2, '0');
   const currentYearMonth = `${currentYear}.${currentMonth}`;
   
-  if (packageJsonVersion && packageJsonVersion.match(/^\\d{2}\\.\\d{2}\\.\\d+\\.\\d+$/)) {
+  if (packageJsonVersion && packageJsonVersion.match(/^\d{2}\.\d{2}\.\d+$/)) {
     // Use YY.MM from package.json
     const [pkgYear, pkgMonth] = packageJsonVersion.split('.');
     const packageYearMonth = `${pkgYear}.${pkgMonth}`;
@@ -433,7 +433,7 @@ function generateCalVerVersion(releaseType, packagePath = '.', options = {}) {
   
   if (currentMonthTags.length === 0 || isManualBump || isAutoMonthUpdate) {
     // First release, manual bump, or auto month update
-    const newVersion = `${targetYearMonth}.0.1`;
+    const newVersion = `${targetYearMonth}.1`;
     const reason = isAutoMonthUpdate ? 'Auto month update' : isManualBump ? 'Manual month bump' : 'First release this month';
     console.log(`${reason}: ${newVersion}`);
     return newVersion;
@@ -443,18 +443,11 @@ function generateCalVerVersion(releaseType, packagePath = '.', options = {}) {
   const latestTag = currentMonthTags[0];
   console.log(`Latest tag for ${targetYearMonth}: ${latestTag}`);
   
-  const [, , minor, patch] = latestTag.split('.').map(Number);
+  const [, , patch] = latestTag.split('.').map(Number);
   
-  let newVersion;
-  if (releaseType === 'minor' || releaseType === 'major') {
-    // feat: or BREAKING CHANGE: increments minor, resets patch
-    newVersion = `${targetYearMonth}.${minor + 1}.0`;
-    console.log(`Feature/breaking change - incremented minor: ${newVersion}`);
-  } else {
-    // fix: or perf: increments patch only
-    newVersion = `${targetYearMonth}.${minor}.${patch + 1}`;
-    console.log(`Bug fix/performance - incremented patch: ${newVersion}`);
-  }
+  // In 3-part CalVer, always increment patch regardless of release type
+  const newVersion = `${targetYearMonth}.${patch + 1}`;
+  console.log(`Incremented patch: ${newVersion}`);
   
   return newVersion;
 }

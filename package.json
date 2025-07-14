@@ -1,6 +1,6 @@
 {
   "name": "calver-release",
-  "version": "25.07.0.1",
+  "version": "25.07.1",
   "description": "Fully automated CalVer releases with monorepo support. A semantic-release alternative for calendar versioning.",
   "main": "dist/src/index.js",
   "types": "dist/src/index.d.ts",
