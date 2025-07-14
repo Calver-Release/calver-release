@@ -87,7 +87,7 @@ async function updatePackageVersion(packagePath: string, version: string): Promi
   const packageJson = JSON.parse(fs.readFileSync(packageJsonPath, 'utf8'));
   packageJson.version = version;
   
-  fs.writeFileSync(packageJsonPath, JSON.stringify(packageJson, null, 2) + '\\n');
+  fs.writeFileSync(packageJsonPath, JSON.stringify(packageJson, null, 2));
 }
 
 async function publishPackage(packagePath: string, version: string, registry: string, logger: any): Promise<PluginResult> {
