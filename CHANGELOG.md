@@ -1,3 +1,15 @@
+## [25.07.1] - 2025-07-14
+
+### ✨ Features
+- feat(Initial commit): CalVer Release tool with autoUpdateMonth feature
+
+### 🐛 Bug Fixes
+- fix: now we support with this format of version `YY.MM.PATCH but will be support this format too `YY.MM.MINOR.PATCH soon
+- fix: npm publish unexpected non-whitespace
+- fix: improve changelog and fix unit test
+- fix: fix unit test
+- fix: fix analyze commits not catch the rule commit
+
 ## [25.07.0.1] - 2025-07-14
 ### 🐛 Bug Fixes 
 - fix: fix analyze commits not catch the rule commit 
