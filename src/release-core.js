@@ -76,7 +76,7 @@ function discoverWorkspaces(monorepoConfig) {
           const yamlContent = fs.readFileSync('pnpm-workspace.yaml', 'utf8');
           const packagesMatch = yamlContent.match(/packages:\\s*([\\s\\S]*?)(?:\\n\\w|$)/);
           if (packagesMatch) {
-            const packageLines = packagesMatch[1].split('\\n')
+            const packageLines = packagesMatch[1].split('\n')
               .map(line => line.trim())
               .filter(line => line.startsWith('- '))
               .map(line => line.substring(2).replace(/["']/g, ''));
@@ -203,12 +203,12 @@ function getChangedPackages(packages, commitMessages) {
     let changedFiles;
     if (latestTag) {
       try {
-        changedFiles = execSync(`git diff --name-only ${latestTag}..HEAD`, { encoding: 'utf8' }).trim().split('\\n');
+        changedFiles = execSync(`git diff --name-only ${latestTag}..HEAD`, { encoding: 'utf8' }).trim().split('\n');
       } catch (error) {
-        changedFiles = execSync('git diff --name-only HEAD~1', { encoding: 'utf8' }).trim().split('\\n');
+        changedFiles = execSync('git diff --name-only HEAD~1', { encoding: 'utf8' }).trim().split('\n');
       }
     } else {
-      changedFiles = execSync('git ls-files', { encoding: 'utf8' }).trim().split('\\n');
+      changedFiles = execSync('git ls-files', { encoding: 'utf8' }).trim().split('\n');
     }
     
     // Map changed files to packages
@@ -363,7 +363,7 @@ function generateCalVerVersion(releaseType, packagePath = '.', options = {}) {
     const packageName = packagePath === '.' ? '' : path.basename(packagePath);
     
     existingTags = tagOutput
-      .split('\\n')
+      .split('\n')
       .filter(tag => tag.trim())
       .filter(tag => {
         if (packageName) {
