@@ -1,0 +1,70 @@
+{
+  "name": "calver-release",
+  "version": "25.07.0.0",
+  "description": "Fully automated CalVer releases with monorepo support. A semantic-release alternative for calendar versioning.",
+  "main": "dist/src/index.js",
+  "types": "dist/src/index.d.ts",
+  "bin": {
+    "calver-release": "./dist/bin/calver-release.js"
+  },
+  "files": [
+    "dist/",
+    "src/",
+    "README.md",
+    "CHANGELOG.md"
+  ],
+  "scripts": {
+    "build": "tsc && cp src/release-core.js dist/src/",
+    "build:watch": "tsc --watch",
+    "dev": "tsc --watch",
+    "release": "node dist/src/index.js",
+    "test": "npm run build && jest",
+    "lint": "echo 'Add linting later'",
+    "clean": "rm -rf dist",
+    "prepublishOnly": "npm run clean && npm run build && npm test"
+  },
+  "keywords": [
+    "release",
+    "calver", 
+    "monorepo",
+    "versioning",
+    "ci/cd",
+    "github",
+    "gitlab",
+    "npm",
+    "lerna",
+    "nx",
+    "pnpm",
+    "workspaces",
+    "conventional-commits",
+    "semantic-release",
+    "automation"
+  ],
+  "author": "CalVer Release Contributors",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Calver-Release/calver-release.git"
+  },
+  "bugs": {
+    "url": "https://github.com/Calver-Release/calver-release/issues"
+  },
+  "homepage": "https://github.com/Calver-Release/calver-release#readme",
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "dependencies": {
+    "commander": "^11.0.0"
+  },
+  "devDependencies": {
+    "jest": "^29.0.0",
+    "@types/node": "^20.0.0",
+    "typescript": "^5.0.0"
+  },
+  "optionalDependencies": {
+    "js-yaml": "^4.1.0"
+  },
+  "publishConfig": {
+    "access": "public"
+  }
+}

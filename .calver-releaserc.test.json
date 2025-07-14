@@ -1,0 +1,14 @@
+{
+  "branches": ["main"],
+  "autoUpdateMonth": true,
+  "tagFormat": "v-${version}",
+  "dryRun": true,
+  "plugins": [
+    "@calver-release/commit-analyzer",
+    "@calver-release/release-notes-generator",
+    "@calver-release/changelog",
+    ["@calver-release/npm", { "npmPublish": false}],
+    "@calver-release/git", 
+    "@calver-release/github"
+  ]
+}

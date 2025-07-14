@@ -1,0 +1,63 @@
+# Changelog
+
+All notable changes to this project will be documented in this file.
+
+The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
+and this project adheres to [Calendar Versioning](https://calver.org/).
+
+## [25.07.0.1] - 2025-07-11
+
+### Added
+- **Full TypeScript Support** - Native TypeScript implementation with complete type definitions
+- **Enhanced Plugin Development** - Comprehensive plugin interfaces and base classes
+- **Plugin Development Guide** - Detailed documentation for creating custom plugins
+- **Real-world Plugin Examples** - Slack notifier, custom release notes, Docker publisher examples
+- **BasePlugin Class** - Abstract base class for easier plugin development
+- **Comprehensive README** - Detailed usage examples and configuration guide
+
+### Enhanced
+- **Type Safety** - Full TypeScript types for all APIs and plugin interfaces
+- **Developer Experience** - Better IntelliSense and error checking
+- **Plugin Architecture** - More robust plugin loading and error handling
+- **Documentation** - Extensive examples for custom plugin development
+
+### Technical
+- TypeScript compilation with source maps and declarations
+- Plugin factory pattern with proper type inference
+- Comprehensive interface definitions for all plugin lifecycle methods
+- Build system improvements for TypeScript output
+
+## [25.07.0.0] - 2025-07-11
+
+### Added
+- Initial release of calver-release
+- Semantic-release style API for CalVer versioning
+- Full monorepo support (npm workspaces, Lerna, pnpm, Nx)
+- Built-in plugins system
+- GitHub and GitLab integration
+- Conventional commits analysis
+- Automatic changelog generation
+- CLI tool with semantic-release compatible commands
+- TypeScript definitions
+- Comprehensive documentation
+
+### Features
+- 📅 CalVer versioning (YY.MM.MINOR.PATCH)
+- 🏢 First-class monorepo support
+- 🔌 Extensible plugin system
+- 🐙 GitHub releases integration
+- 🦮 GitLab releases integration
+- 📝 Conventional commits support
+- 📋 Automatic changelog updates
+- 🎯 Smart change detection
+- 🧪 Dry run mode
+- 📦 Independent package versioning
+
+### Plugins
+- `@calver-release/commit-analyzer` - Analyze conventional commits
+- `@calver-release/release-notes-generator` - Generate release notes
+- `@calver-release/changelog` - Update CHANGELOG.md
+- `@calver-release/npm` - Update package.json versions
+- `@calver-release/git` - Create tags and commit changes
+- `@calver-release/github` - Create GitHub releases
+- `@calver-release/gitlab` - Create GitLab releases
