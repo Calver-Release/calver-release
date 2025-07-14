@@ -229,7 +229,7 @@ function getChangedPackages(packages, commitMessages) {
       const message = commit.substring(8); // Remove hash prefix
       
       // Look for scoped commits like 'feat(package-name): description'
-      const scopeMatch = message.match(/^\\w+\\(([^)]+)\\):/);
+      const scopeMatch = message.match(/^\w+\(([^)]+)\):/);
       if (scopeMatch) {
         const scope = scopeMatch[1];
         const matchingPkg = packages.find(pkg => 
@@ -264,11 +264,12 @@ function analyzeCommits(commitMessages, packagePath = '.') {
   let releaseCommits = [];
   
   for (const commit of commits) {
-    const message = commit.substring(8); // Remove hash prefix
+    const spaceIndex = commit.indexOf(' ');
+    const message = spaceIndex > 0 ? commit.substring(spaceIndex + 1) : commit; // Remove hash prefix
     
     // For monorepo, check if commit affects this package
     if (packagePath !== '.') {
-      const scopeMatch = message.match(/^\\w+\\(([^)]+)\\):/);
+      const scopeMatch = message.match(/^\w+\(([^)]+)\):/);
       if (scopeMatch) {
         const scope = scopeMatch[1];
         const pkgName = path.basename(packagePath);
@@ -280,13 +281,13 @@ function analyzeCommits(commitMessages, packagePath = '.') {
     }
     
     // Check for conventional commit types
-    if (message.match(/^feat(\\(.+\\))?:/)) {
+    if (message.match(/^feat(\(.+\))?:/)) {
       hasFeature = true;
       releaseCommits.push(`✨ ${message}`);
-    } else if (message.match(/^fix(\\(.+\\))?:/)) {
+    } else if (message.match(/^fix(\(.+\))?:/)) {
       hasFix = true;
       releaseCommits.push(`🐛 ${message}`);
-    } else if (message.match(/^perf(\\(.+\\))?:/)) {
+    } else if (message.match(/^perf(\(.+\))?:/)) {
       hasFix = true; // Performance improvements count as fixes
       releaseCommits.push(`⚡ ${message}`);
     } else if (message.includes('BREAKING CHANGE') || message.match(/^.+!:/)) {
