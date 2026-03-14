@@ -1,3 +1,8 @@
+## [26.03.1] - 2026-03-14
+
+### ✨ Features
+- feat: Allow single-digit months in CalVer versions via a new `padMonth` option, expand config file support to `.cjs` and `.mjs`, and refine npm plugin option parsing.
+
 ## [25.07.2] - 2025-07-14
 
 ### ✨ Features
