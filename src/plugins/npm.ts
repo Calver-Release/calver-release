@@ -7,10 +7,8 @@ import { Plugin, CalverReleaseContext, PluginFactory, PluginResult } from '../ty
  * Built-in npm plugin - updates package.json versions and publishes to NPM
  */
 const createNpmPlugin: PluginFactory = (options: any = {}): Plugin => {
-  const {
-    npmPublish = true,
-    registry = 'https://registry.npmjs.org'
-  } = options;
+  const npmPublish = options.npmPublish !== undefined ? options.npmPublish : (options.publish !== undefined ? options.publish : true);
+  const registry = options.registry || 'https://registry.npmjs.org';
 
   return {
     verifyConditions: async (ctx: CalverReleaseContext): Promise<void> => {

@@ -21,6 +21,7 @@ export async function getConfig(
     ci: true,
     repositoryUrl: '',
     autoUpdateMonth: false,
+    padMonth: true,
     plugins: [
       '@calver-release/commit-analyzer',
       '@calver-release/release-notes-generator', 
@@ -82,8 +83,14 @@ async function loadConfigFile(cwd: string): Promise<Partial<CalverReleaseOptions
     '.calver-releaserc',
     '.calver-releaserc.json',
     '.calver-releaserc.js',
+    '.calver-releaserc.cjs',
+    '.calver-releaserc.mjs',
     'calver-release.config.js',
-    'release.config.js'
+    'calver-release.config.cjs',
+    'calver-release.config.mjs',
+    'release.config.js',
+    'release.config.cjs',
+    'release.config.mjs'
   ];
   
   for (const configFile of configFiles) {
@@ -91,7 +98,7 @@ async function loadConfigFile(cwd: string): Promise<Partial<CalverReleaseOptions
     
     if (fs.existsSync(configPath)) {
       try {
-        if (configFile.endsWith('.js')) {
+        if (configFile.endsWith('.js') || configFile.endsWith('.cjs') || configFile.endsWith('.mjs')) {
           // JavaScript config file
           delete require.cache[require.resolve(configPath)];
           const config = require(configPath);
