@@ -1,3 +1,8 @@
+## [26.04.1] - 2026-04-05
+
+### 🐛 Bug Fixes
+- fix: decouple auto month update logic from initial version bump to allow incremental tagging on re-runs
+
 ## [26.03.1] - 2026-03-14
 
 ### ✨ Features
