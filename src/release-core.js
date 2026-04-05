@@ -448,12 +448,25 @@ function generateCalVerVersion(releaseType, packagePath = '.', options = {}) {
       }
     });
   
-  if (currentMonthTags.length === 0 || isManualBump || isAutoMonthUpdate) {
-    // First release, manual bump, or auto month update
+  if (currentMonthTags.length === 0 || isManualBump) {
+    // First release this month or manual bump — always start from .1
     const newVersion = isNpmCompatible ? `${targetYearMonth}.1` : `${targetYearMonth}.0.1`;
-    const reason = isAutoMonthUpdate ? 'Auto month update' : isManualBump ? 'Manual month bump' : 'First release this month';
+    const reason = isManualBump ? 'Manual month bump' : 'First release this month';
     console.log(`${reason}: ${newVersion}`);
     return newVersion;
+  }
+
+  if (isAutoMonthUpdate) {
+    if (currentMonthTags.length > 0) {
+      // Tags already exist for the new month (e.g. re-run after partial CI failure) —
+      // fall through to normal increment logic below
+      console.log(`Auto month update (tags exist for ${targetYearMonth}), incrementing from: ${currentMonthTags[0]}`);
+    } else {
+      // Genuinely first release of the new month
+      const newVersion = isNpmCompatible ? `${targetYearMonth}.1` : `${targetYearMonth}.0.1`;
+      console.log(`Auto month update: ${newVersion}`);
+      return newVersion;
+    }
   }
   
   // Increment existing based on release type and format
