@@ -76,13 +76,13 @@ const createGitHubPlugin: PluginFactory = (options: any = {}): Plugin => {
             repoInfo.owner,
             repoInfo.repo,
             release.tagName,
-            release.packageName || 'root',
+            release.packageName || null,
             nextRelease.notes || '',
             githubToken,
             release.analysis.hasBreakingChange
           );
           releases.push(result);
-          logger?.log(`Created GitHub release for ${release.packageName || 'root'}: ${result.url}`);
+          logger?.log(`Created GitHub release for ${release.packageName || release.tagName}: ${result.url}`);
         }
         return releases;
       } else if (nextRelease) {
@@ -91,7 +91,7 @@ const createGitHubPlugin: PluginFactory = (options: any = {}): Plugin => {
           repoInfo.owner,
           repoInfo.repo,
           (nextRelease as any).tagName || (nextRelease as any).gitTag,
-          (nextRelease as any).packageName || 'root',
+          (nextRelease as any).packageName || null,
           nextRelease.notes || '',
           githubToken,
           (nextRelease as any).analysis?.hasBreakingChange || false
@@ -133,18 +133,18 @@ function getRepositoryInfo(): RepositoryInfo | null {
 }
 
 async function createGitHubRelease(
-  owner: string, 
-  repo: string, 
-  tagName: string, 
-  releaseName: string, 
-  description: string, 
-  token: string, 
+  owner: string,
+  repo: string,
+  tagName: string,
+  releaseName: string | null,
+  description: string,
+  token: string,
   isPrerelease: boolean = false
 ): Promise<PluginResult> {
   return new Promise((resolve, reject) => {
     const payload = {
       tag_name: tagName,
-      name: `${releaseName} ${tagName}`,
+      name: releaseName ? `${releaseName} ${tagName}` : tagName,
       body: description,
       draft: false,
       prerelease: isPrerelease,
