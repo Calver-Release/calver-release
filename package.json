@@ -14,6 +14,7 @@
     "CHANGELOG.md"
   ],
   "scripts": {
+    "prepare": "npm run build",
     "build": "tsc && cp src/release-core.js dist/src/",
     "build:watch": "tsc --watch",
     "dev": "tsc --watch",

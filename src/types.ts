@@ -15,8 +15,9 @@ export interface CalverReleaseOptions {
   repositoryUrl?: string;
   tagName?: string;
   autoUpdateMonth?: boolean;
-  versionFormat?: 'YY.MM.MINOR.PATCH' | 'YY.MM.PATCH' | 'auto';
+  versionFormat?: 'YY.MM.MINOR.PATCH' | 'YY.MM.PATCH' | 'YYYY.MM.MINOR.PATCH' | 'YYYY.MM.PATCH' | 'auto';
   padMonth?: boolean;
+  tagPrefix?: string;
 }
 
 export interface Package {

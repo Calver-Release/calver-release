@@ -87,10 +87,4 @@ program.on('--help', () => {
   console.log('');
 });
 
-// Show help if no arguments
-if (!process.argv.slice(2).length) {
-  program.outputHelp();
-  process.exit(0);
-}
-
 program.parse(process.argv);
