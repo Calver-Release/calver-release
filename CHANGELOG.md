@@ -1,3 +1,8 @@
+## [26.05.1] - 2026-05-24
+
+### ✨ Features
+- feat: add YYYY four-digit year support to versionFormat (#1)
+
 ## [26.04.1] - 2026-04-05
 
 ### 🐛 Bug Fixes
