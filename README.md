@@ -113,25 +113,35 @@ CalVer Release supports multiple configuration methods:
 
 ### Version Format Options
 
-CalVer Release supports two version formats:
+CalVer Release supports four version formats across two year styles:
 
 #### **4-Part Format**: `YY.MM.MINOR.PATCH` (Default)
 - **Use case**: Non-NPM scenarios (changelog, release notes, tags)
 - **Example**: `25.07.0.1`, `25.07.1.2`, `25.08.0.1`
 - **Behavior**: Full CalVer semantics with separate minor and patch increments
 
-#### **3-Part Format**: `YY.MM.PATCH` (NPM Compatible)  
+#### **3-Part Format**: `YY.MM.PATCH` (NPM Compatible)
 - **Use case**: NPM publishing (automatically enabled with NPM plugin)
 - **Example**: `25.07.1`, `25.07.2`, `25.08.1`
 - **Behavior**: NPM-compatible semantic versioning
+
+#### **4-Part Format with full year**: `YYYY.MM.MINOR.PATCH`
+- **Use case**: Platforms that compare version components numerically and where a two-digit year would be less than an existing version (e.g. Apple App Store `CFBundleShortVersionString`)
+- **Example**: `2025.07.0.1`, `2025.07.1.2`, `2025.08.0.1`
+
+#### **3-Part Format with full year**: `YYYY.MM.PATCH`
+- **Use case**: NPM-compatible publishing where a full four-digit year is required
+- **Example**: `2025.07.1`, `2025.07.2`, `2025.08.1`
 
 #### **Format Selection**
 
 ```json
 {
-  "versionFormat": "YY.MM.MINOR.PATCH",    // 4-part (default)
-  "versionFormat": "YY.MM.PATCH",          // 3-part (NPM compatible)
-  "versionFormat": "auto"                  // Auto-detect based on plugins
+  "versionFormat": "YY.MM.MINOR.PATCH",     // 4-part, 2-digit year (default)
+  "versionFormat": "YY.MM.PATCH",           // 3-part, 2-digit year (NPM compatible)
+  "versionFormat": "YYYY.MM.MINOR.PATCH",   // 4-part, 4-digit year
+  "versionFormat": "YYYY.MM.PATCH",         // 3-part, 4-digit year (NPM compatible)
+  "versionFormat": "auto"                   // Auto-detect based on plugins
 }
 ```
 
@@ -139,6 +149,24 @@ CalVer Release supports two version formats:
 - **With NPM plugin**: Automatically uses 3-part format (`YY.MM.PATCH`)
 - **Without NPM plugin**: Uses 4-part format (`YY.MM.MINOR.PATCH`)
 - **Explicit setting**: Overrides auto-detection
+
+### Tag Prefix
+
+By default, calver-release creates tags with a `v-` prefix (e.g. `v-25.07.0.1`). You can change this with the `tagPrefix` option:
+
+```json
+{
+  "tagPrefix": "v-"
+}
+```
+
+Common values:
+
+| `tagPrefix` | Example tag |
+|-------------|-------------|
+| `"v-"` | `v-2025.07.0.1` (default) |
+| `"v"` | `v2025.07.0.1` (standard git convention) |
+| `""` | `2025.07.0.1` (no prefix) |
 
 #### **Month Update Control**
 

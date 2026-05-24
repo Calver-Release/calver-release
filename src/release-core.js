@@ -335,7 +335,9 @@ function analyzeCommits(commitMessages, packagePath = '.') {
 function generateCalVerVersion(releaseType, packagePath = '.', options = {}) {
   // Determine version format
   const versionFormat = determineVersionFormat(options);
-  const isNpmCompatible = versionFormat === 'YY.MM.PATCH';
+  const isNpmCompatible = versionFormat === 'YY.MM.PATCH' || versionFormat === 'YYYY.MM.PATCH';
+  const useFourDigitYear = versionFormat.startsWith('YYYY');
+  const tagPrefix = options.tagPrefix !== undefined ? options.tagPrefix : 'v-';
   
   console.log(`Using version format: ${versionFormat}`);
   
@@ -370,21 +372,22 @@ function generateCalVerVersion(releaseType, packagePath = '.', options = {}) {
           // For packages: match v-VERSION-PACKAGE-release format
           return tag.includes(`-${packageName}-release`);
         } else {
-          // For single repo: match v-VERSION format (no package suffix)
-          return tag.match(/^v-\d{2}\.\d{1,2}\.\d+(\.\d+)?$/);
+          // For single repo: match vPREFIX+VERSION format (no package suffix)
+          return tag.startsWith(tagPrefix) && tag.slice(tagPrefix.length).match(/^\d{2,4}\.\d{1,2}\.\d+(\.\d+)?$/);
         }
       })
       .map(tag => {
         if (packageName) {
-          // Extract version from v-VERSION-PACKAGE-release
-          const match = tag.match(/^v-(\d{2}\.\d{1,2}\.\d+(?:\.\d+)?)-/);
+          // Extract version from PREFIX+VERSION-PACKAGE-release
+          const escaped = tagPrefix.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+          const match = tag.match(new RegExp(`^${escaped}(\\d{2,4}\\.\\d{1,2}\\.\\d+(?:\\.\\d+)?)-`));
           return match ? match[1] : '';
         } else {
-          // Extract version from v-VERSION
-          return tag.replace(/^v-/, '');
+          // Extract version from PREFIX+VERSION
+          return tag.slice(tagPrefix.length);
         }
       })
-      .filter(tag => tag.match(/^\d{2}\.\d{1,2}\.\d+(\.\d+)?$/)); // Both 3-part and 4-part CalVer tags
+      .filter(tag => tag.match(/^\d{2,4}\.\d{1,2}\.\d+(\.\d+)?$/)); // Both 3-part and 4-part CalVer tags, YY or YYYY year
   } catch (error) {
     console.log('No existing tags found');
   }
@@ -398,13 +401,13 @@ function generateCalVerVersion(releaseType, packagePath = '.', options = {}) {
   
   // Get current date
   const now = new Date();
-  const currentYear = now.getFullYear().toString().slice(-2);
+  const currentYear = useFourDigitYear ? now.getFullYear().toString() : now.getFullYear().toString().slice(-2);
   const padMonth = options.padMonth !== false; // Default to true
   const monthString = (now.getMonth() + 1).toString();
   const currentMonth = padMonth ? monthString.padStart(2, '0') : monthString;
   const currentYearMonth = `${currentYear}.${currentMonth}`;
   
-  if (packageJsonVersion && packageJsonVersion.match(/^\d{2}\.\d{1,2}\.\d+(\.\d+)?$/)) {
+  if (packageJsonVersion && packageJsonVersion.match(/^\d{2,4}\.\d{1,2}\.\d+(\.\d+)?$/)) {
     // Use YY.MM from package.json
     const [pkgYear, pkgMonth] = packageJsonVersion.split('.');
     const packageYearMonth = `${pkgYear}.${pkgMonth}`;
@@ -643,7 +646,8 @@ async function processPackageRelease(pkg, commits, options = {}) {
   
   // Update CHANGELOG.md and package.json for this package
   const packageJsonPath = path.join(pkg.path, 'package.json');
-  const tagName = packageName ? `v-${newVersion}-${packageName}-release` : `v-${newVersion}`;
+  const tagPrefix = options.tagPrefix !== undefined ? options.tagPrefix : 'v-';
+  const tagName = packageName ? `${tagPrefix}${newVersion}-${packageName}-release` : `${tagPrefix}${newVersion}`;
   
   if (options.dryRun) {
     console.log(`📝 Dry run: Would update CHANGELOG.md for ${pkg.name}`);

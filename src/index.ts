@@ -181,7 +181,8 @@ async function analyzeStep(ctx: CalverReleaseContext): Promise<{ shouldRelease: 
       const packageName = pkg.name === 'root' ? null : pkg.name;
       
       const releaseNotes = generateReleaseNotes(analysis, version, packageName);
-      const tagName = packageName ? `v-${version}-${packageName}-release` : `v-${version}`;
+      const tagPrefix = options?.tagPrefix !== undefined ? options.tagPrefix : 'v-';
+      const tagName = packageName ? `${tagPrefix}${version}-${packageName}-release` : `${tagPrefix}${version}`;
       
       releases.push({
         package: pkg,
