@@ -1,3 +1,8 @@
+## [26.10.1] - 2026-10-02
+
+### 🐛 Bug Fixes
+- fix: compare CalVer months numerically
+
 ## [26.05.1] - 2026-05-24
 
 ### ✨ Features
