@@ -331,6 +331,11 @@ function analyzeCommits(commitMessages, packagePath = '.') {
   };
 }
 
+function yearMonthNumber(version) {
+  const [year, month] = version.split('.').map(Number);
+  return year * 12 + month;
+}
+
 // Generate CalVer version for a specific package
 function generateCalVerVersion(releaseType, packagePath = '.', options = {}) {
   // Determine version format
@@ -387,7 +392,8 @@ function generateCalVerVersion(releaseType, packagePath = '.', options = {}) {
           return tag.slice(tagPrefix.length);
         }
       })
-      .filter(tag => tag.match(/^\d{2,4}\.\d{1,2}\.\d+(\.\d+)?$/)); // Both 3-part and 4-part CalVer tags, YY or YYYY year
+      .filter(tag => tag.match(/^\d{2,4}\.\d{1,2}\.\d+(\.\d+)?$/)) // Both 3-part and 4-part CalVer tags, YY or YYYY year
+      .sort((a, b) => b.localeCompare(a, 'en', { numeric: true }));
   } catch (error) {
     console.log('No existing tags found');
   }
@@ -413,7 +419,7 @@ function generateCalVerVersion(releaseType, packagePath = '.', options = {}) {
     const packageYearMonth = `${pkgYear}.${pkgMonth}`;
     
     // Check if auto month update is enabled and current month is newer
-    if (options.autoUpdateMonth && currentYearMonth > packageYearMonth) {
+    if (options.autoUpdateMonth && yearMonthNumber(currentYearMonth) > yearMonthNumber(packageYearMonth)) {
       targetYearMonth = currentYearMonth;
       isAutoMonthUpdate = true;
       console.log(`Auto month update enabled: ${packageYearMonth} → ${targetYearMonth}`);
@@ -428,7 +434,7 @@ function generateCalVerVersion(releaseType, packagePath = '.', options = {}) {
       const [latestYear, latestMonth] = latestTag.split('.');
       const latestYearMonth = `${latestYear}.${latestMonth}`;
       
-      if (targetYearMonth !== latestYearMonth) {
+      if (yearMonthNumber(targetYearMonth) > yearMonthNumber(latestYearMonth)) {
         isManualBump = true;
         console.log(`Manual month bump detected: ${latestYearMonth} → ${targetYearMonth}`);
       }
@@ -441,7 +447,7 @@ function generateCalVerVersion(releaseType, packagePath = '.', options = {}) {
   
   // Find tags for target month (filter by format)
   const currentMonthTags = existingTags
-    .filter(tag => tag.startsWith(targetYearMonth))
+    .filter(tag => yearMonthNumber(tag) === yearMonthNumber(targetYearMonth))
     .filter(tag => {
       const parts = tag.split('.');
       if (isNpmCompatible) {
